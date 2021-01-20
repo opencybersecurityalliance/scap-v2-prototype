@@ -33,17 +33,17 @@ Development on the SCAPv2 standard itself occurs in several [open public working
 
 TBD
 
-## Installation
+### Installation
 
 TBD
 
-## Contributing
+### Contributing
 
 We are thrilled you are considering contributing! We welcome all contributors.
 
 Please read our [guidelines for contributing](https://github.com/opencybersecurityalliance/oca-admin/blob/master/CONTRIBUTING.md).
 
-## Licensing
+### Licensing
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
