@@ -11,7 +11,7 @@
 The SCAPv2 Prototype project is an effort to create an open-source prototype implementation of the SCAPv2 data collection architecture. This project has two main goals:
 
 * To experiment and validate designs before codified in an architecture standard
-* To provide an example implementation in order to support the future testing of compliant vendor products.
+* To work towards providing an example implementation in order to support the future testing of compliant vendor products.
 
 The project supports dummy message flows through the architecture, in support of key use cases.
 
