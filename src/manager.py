@@ -52,7 +52,7 @@ EVENT_ASSESSMENT_RESULTS_TOPIC = "/scap/event/assessment/results"
 EVENT_STORE_DATA_TOPIC = "/scap/event/data/store"
 
 # Create DXL configuration from file
-config = DxlClientConfig.create_dxl_config_from_file(CONFIG_FILE)
+config = DxlClientConfig.create_dxl_config_from_file(CONFIG)
 
 # Stores initiate assessment requests for processing
 assessment_requests = []

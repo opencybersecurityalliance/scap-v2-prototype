@@ -61,7 +61,7 @@ EVENT_ASSESSMENT_RESULTS_TOPIC = "/scap/event/assessment/results"
 EVENT_STORE_DATA_TOPIC = "/scap/event/data/store"
 
 # Create DXL configuration from file
-config = DxlClientConfig.create_dxl_config_from_file(CONFIG_FILE)
+config = DxlClientConfig.create_dxl_config_from_file(CONFIG)
 
 # Stores all incoming collection requests that
 # need to be processed
@@ -183,7 +183,7 @@ with DxlClient(config) as client:
     # Compute the target identifier based on the collected
     # asset information
     def get_target_id(asset_info):
-        info = bytes(asset_info)
+        info = json.dumps(asset_info).encode("UTF-8")
         hash_object = hashlib.md5(info)
         return hash_object.hexdigest()
 

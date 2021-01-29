@@ -12,12 +12,13 @@ import os
 import sys
 import json
 
+from builtins import input as prompt
 from dxlclient.callbacks import EventCallback
 from dxlclient.client import DxlClient
 from dxlclient.client_config import DxlClientConfig
 from dxlclient.message import Message, Request, Response
-from messages import InitiateAssessmentMessage, RequestAcknowledgementMessage, CancelAssessmentMessage, \
-    ReportResultsMessage, QueryMessage, QueryResultMessage
+from messages import InitiateAssessmentMessage, RequestAcknowledgementMessage, CancelAssessmentMessage
+from messages import ReportResultsMessage, QueryMessage, QueryResultMessage
 
 # Parse the Collector configuration file                                                                             
 if len(sys.argv) == 1:
@@ -48,7 +49,7 @@ from common import *
 logger = logging.getLogger(__name__)
 
 # Create DXL configuration from file
-config = DxlClientConfig.create_dxl_config_from_file(CONFIG_FILE)
+config = DxlClientConfig.create_dxl_config_from_file(CONFIG)
 
 # Stores the transaction ids of requests made by the application
 transactions = []

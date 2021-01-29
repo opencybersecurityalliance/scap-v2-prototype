@@ -36,7 +36,7 @@ SERVICE_REPOSITORY_QUERY_TOPIC = "/scap/service/repository/query"
 EVENT_STORE_DATA_TOPIC = "/scap/event/data/store"
 
 # Create DXL configuration from file
-config = DxlClientConfig.create_dxl_config_from_file(CONFIG_FILE)
+config = DxlClientConfig.create_dxl_config_from_file(CONFIG)
 
 # Stores all transactions associated with an application
 app_transactions = {}
