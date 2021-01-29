@@ -38,13 +38,13 @@ if len(sys.argv) == 1:
     sys.exit()
 
 collector_config = open(sys.argv[1])
-j = json.load(collector_config)         
+j = json.load(collector_config)
 COLLECTOR_ID = j["collector_id"]
 make = j["make"]
 model = j["model"]
 
 # Topic that the collector listens on for collection request events
-EVENT_COLLECTOR_REQUEST_TOPIC =	"/scap/event/collector/request"+"/"+COLLECTOR_ID
+EVENT_COLLECTOR_REQUEST_TOPIC = "/scap/event/collector/request" + "/" + COLLECTOR_ID
 
 # Topic to send collector requests to the PCX
 EVENT_PCX_COLLECTOR_REQUEST_TOPIC = "/scap/event/pcx/collector/request"
@@ -95,30 +95,30 @@ with DxlClient(config) as client:
         p = []
         for target in targets:
             if target in pces.keys():
-                for pce	in pces[target]:
+                for pce in pces[target]:
                     if pce not in p:
                         p.append(pce)
         return p
-                   
+
     # Convert content into a format understandable by the PCE                                                     
-    def	convert_content(content):
+    def convert_content(content):
         return content
-        
+
     # Task the PCE with an collection request
     def task_pce(crm, pce_id):
         logger.info("Tasking PCE: %s", crm.to_s())
 
-	# Get content and perform any content conversions
+        # Get content and perform any content conversions
         # before sending to PCE. If cancellation message
         # just send that to the PCE.
         if crm.ids == "":
-            content = "cancel_"+str(crm.transaction_id)
+            content = "cancel_" + str(crm.transaction_id)
         else:
             content = get_content(crm.ids)
             content = convert_content(content)
-        
+
         # Send the collection request to the identified PCE
-        request = Request(SERVICE_PCE_REQUEST_TOPIC+"/"+pce_id)
+        request = Request(SERVICE_PCE_REQUEST_TOPIC + "/" + pce_id)
         request.payload = content.encode()
         response = client.sync_request(request)
 
@@ -133,16 +133,16 @@ with DxlClient(config) as client:
                 rrsm.collector_id = COLLECTOR_ID
                 rrsm.pce_id = pce_id
                 rrsm.timestamp = str(datetime.datetime.now())
-                
+
                 # Apply collection parameters                                                                       
                 cp_rrsm = apply_collection_parameters(rrsm, crm.collection_parameters)
                 store_data(cp_rrsm)
-                
+
                 # Apply result format and filters and send to the
                 # appropriate application                                                                      
                 rff_rrsm = apply_format_and_filters(rrsm, crm.result_format_filters)
                 send_collection_results_event(rff_rrsm)
-            
+
         return
 
     # Get the target id associated with the specified
@@ -151,11 +151,11 @@ with DxlClient(config) as client:
         for k in pces.keys():
             if pce_id in pces[k]:
                 return k
-    
+
     # Task the PCX with a collection request
     def task_pcx(crm, pcx_id):
         logger.info("Tasking PCX: %s", crm.to_s())
-        send_event(EVENT_PCX_COLLECTOR_REQUEST_TOPIC+"/"+pcx_id, crm.to_json())       
+        send_event(EVENT_PCX_COLLECTOR_REQUEST_TOPIC + "/" + pcx_id, crm.to_json())
 
     # Check local cache for PCE instructions
     def check_local_cache(ids):
@@ -169,26 +169,26 @@ with DxlClient(config) as client:
             return ""
         else:
             return "some cached content"
-        
+
     # Get content either from local cache or repository
     def get_content(ids):
         # Check local cache
         content = check_local_cache(ids)
-         
+
         # If missing get from repository
         if content == "":
             qrm = query_repository("content_ids")
             content = qrm.result
         return content
 
-    # Compute the target identifier based on the collected                                                   
+    # Compute the target identifier based on the collected
     # asset information                                                                              
     def get_target_id(asset_info):
-	info = bytes(asset_info)
+        info = bytes(asset_info)
         hash_object = hashlib.md5(info)
         return hash_object.hexdigest()
 
-    # Get all the PCE ids stored in the                                                                   
+    # Get all the PCE ids stored in the
     # collection methods property 
     def get_pce_ids(collection_methods):
         cms = json.loads(collection_methods)
@@ -197,7 +197,7 @@ with DxlClient(config) as client:
             print(cm)
             pce_ids.append(cm["pce-id"])
         return pce_ids
-            
+
     # Query the repository for certain information
     def query_repository(query):
         # Create query message and send it to the repository
@@ -214,34 +214,34 @@ with DxlClient(config) as client:
     # Send assessment results event to the appropriate application
     def send_collection_results_event(rrsm):
         logger.info("Sending report results to application %s : %s", rrsm.requestor_id, rrsm.to_s())
-        send_event(EVENT_ASSESSMENT_RESULTS_TOPIC+"/"+rrsm.requestor_id, rrsm.to_json())
-        
+        send_event(EVENT_ASSESSMENT_RESULTS_TOPIC + "/" + rrsm.requestor_id, rrsm.to_json())
+
     # Store data in the repository                                                                             
     def store_data(m):
         logger.info("Storing data in the repository: %s", m.to_s())
         send_event(EVENT_STORE_DATA_TOPIC, m.to_json())
-        
+
     # Send event to the specified topic                                                                            
     def send_event(topic, m):
         event = Event(topic)
         event.payload = m.encode()
         client.send_event(event)
-        
+
     # Apply collection parameters to report results
     def apply_collection_parameters(rrsm, collection_parameters):
         return rrsm
-    
+
     # Apply format and filters to report results
     def apply_format_and_filters(rrsm, result_format_filters):
         return rrsm
 
     # Process incoming collection events
     class CollectionEventCallback(EventCallback):
-	def on_event(self, event):
+        def on_event(self, event):
             crm = CollectorRequestMessage()
             crm.parse(event.payload.decode())
-            collection_requests.append(crm)            
-                
+            collection_requests.append(crm)
+
     # Process incoming registration events
     class RegistrationEventCallback(EventCallback):
         def on_event(self, event):
@@ -250,7 +250,7 @@ with DxlClient(config) as client:
             # to the list of known PCEs
             rm = RegistrationMessage()
             rm.parse(event.payload.decode())
-            
+
             # Check if it is coming from a PCX
             if rm.pcx_id != "":
                 if rm.target_id in pcx_pces.keys():
@@ -264,7 +264,7 @@ with DxlClient(config) as client:
                     rm.collector_id = COLLECTOR_ID
                     rm.collector_make = make
                     rm.collector_model = model
-                    
+
                     # Only store in the repository if this target
                     # wasn't already identified by PCE
                     if rm.target_id not in pces.keys():
@@ -288,7 +288,7 @@ with DxlClient(config) as client:
                     pces[target_id] = [rm.pce_id]
                     rm.collector_id = COLLECTOR_ID
                     rm.target_id = target_id
-                    rm.collector_make =	make
+                    rm.collector_make = make
                     rm.collector_model = model
 
                     # Only store in the repository if this target
@@ -296,7 +296,7 @@ with DxlClient(config) as client:
                     if rm.target_id not in pcx_pces.keys():
                         store_data(rm)
 
-    # Prepare service registration information                                                                   
+    # Prepare service registration information
     info = ServiceRegistrationInfo(client, "/scap/collector")
 
     # Connect to the message fabric and add a listener for registration events
@@ -324,5 +324,5 @@ with DxlClient(config) as client:
             # Task all PCEs with collection
             for pce_id in pce_ids:
                 task_pce(crm, pce_id)
-                                    
+
         time.sleep(1)

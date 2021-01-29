@@ -16,7 +16,8 @@ from dxlclient.callbacks import EventCallback
 from dxlclient.client import DxlClient
 from dxlclient.client_config import DxlClientConfig
 from dxlclient.message import Message, Request, Response
-from messages import InitiateAssessmentMessage, RequestAcknowledgementMessage, CancelAssessmentMessage, ReportResultsMessage, QueryMessage, QueryResultMessage
+from messages import InitiateAssessmentMessage, RequestAcknowledgementMessage, CancelAssessmentMessage, \
+    ReportResultsMessage, QueryMessage, QueryResultMessage
 
 # Parse the Collector configuration file                                                                             
 if len(sys.argv) == 1:
@@ -37,7 +38,7 @@ SERVICE_CANCEL_ASSESSMENT_TOPIC = "/scap/service/assessment/cancel"
 SERVICE_REPOSITORY_QUERY_TOPIC = "/scap/service/repository/query"
 
 # Topic that this application listens on for assessment results
-EVENT_ASSESSMENT_RESULTS_TOPIC = "/scap/event/assessment/results/"+APP_ID
+EVENT_ASSESSMENT_RESULTS_TOPIC = "/scap/event/assessment/results/" + APP_ID
 
 # Import common logging and configuration
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")
@@ -73,7 +74,7 @@ with DxlClient(config) as client:
 
         # Extract and store the transaction id from the acknowledgement message
         if res.message_type != Message.MESSAGE_TYPE_ERROR:
-	    ram = RequestAcknowledgementMessage()
+            ram = RequestAcknowledgementMessage()
             ram.parse(res.payload.decode())
             logger.info("Application received response: %s", ram.to_s())
             transactions.append(ram.transaction_id)
@@ -87,10 +88,10 @@ with DxlClient(config) as client:
         res = client.sync_request(req)
 
         # Parse and return the query results
-	qrm = QueryResultMessage()
+        qrm = QueryResultMessage()
         qrm.parse(res.payload.decode())
         return qrm
-            
+
     # Process incoming report results events
     class ReportResultsEventCallback(EventCallback):
         def on_event(self, event):
@@ -115,52 +116,52 @@ with DxlClient(config) as client:
         print("Press 7 to cancel an assessment")
         print("Press 8 to submit a query")
         print("Press 0 to quit")
-    
+
         option = prompt("Enter option: ").strip()
 
         # Run an inventory scan
         if option == "1":
-	    m = InitiateAssessmentMessage("inventory", "*", "<= 3 days", "06-15-2020", "true",
-	                             "[{\"pce-id\": \"d481281a-4d09-4564-a5a9-e86b46ad8e50\", \"check-type\": \"oval\"},{\"pce-id\": \"bd476f20-cfa4-4ff5-888a-0ba3a6bbb45d\", \"check-type\": \"oval\"},{\"pce-id\": \"7bc0df90-cdff-4c73-99ab-8539ca43afff\", \"check-type\": \"oval\"}, {\"pce-id\": \"c6048795-2d04-4142-806d-2c1d281c335c\", \"check-type\": \"oval\"}]",
-                                     "oval", "full", "", APP_ID)
+            m = InitiateAssessmentMessage("inventory", "*", "<= 3 days", "06-15-2020", "true",
+                                          "[{\"pce-id\": \"d481281a-4d09-4564-a5a9-e86b46ad8e50\", \"check-type\": \"oval\"},{\"pce-id\": \"bd476f20-cfa4-4ff5-888a-0ba3a6bbb45d\", \"check-type\": \"oval\"},{\"pce-id\": \"7bc0df90-cdff-4c73-99ab-8539ca43afff\", \"check-type\": \"oval\"}, {\"pce-id\": \"c6048795-2d04-4142-806d-2c1d281c335c\", \"check-type\": \"oval\"}]",
+                                          "oval", "full", "", APP_ID)
             request_assessment(m)
 
         # Assess a Windows system
         elif option == "2":
             m = InitiateAssessmentMessage("assess", "os == Windows 7", "<= 3 days", "06-15-2020", "true",
-                                     "[{\"pce-id\": \"d481281a-4d09-4564-a5a9-e86b46ad8e50\", \"check-type\": \"oval\"}]",
-                                     "oval", "full", "", APP_ID)
+                                          "[{\"pce-id\": \"d481281a-4d09-4564-a5a9-e86b46ad8e50\", \"check-type\": \"oval\"}]",
+                                          "oval", "full", "", APP_ID)
             request_assessment(m)
 
         # Assess a Linux system
         elif option == "3":
             m = InitiateAssessmentMessage("assess", "os == RHEL 7", "<= 3 days", "06-15-2020", "true",
-                                     "[{\"pce-id\": \"bd476f20-cfa4-4ff5-888a-0ba3a6bbb45d\", \"check-type\": \"oval\"}]",
-                                     "oval", "full", "", APP_ID)
+                                          "[{\"pce-id\": \"bd476f20-cfa4-4ff5-888a-0ba3a6bbb45d\", \"check-type\": \"oval\"}]",
+                                          "oval", "full", "", APP_ID)
             request_assessment(m)
 
         # Assess a Solaris system
         elif option == "4":
             m = InitiateAssessmentMessage("assess", "os == Solaris 11", "<= 3 days", "06-15-2020", "true",
-                                     "[{\"pce-id\": \"7bc0df90-cdff-4c73-99ab-8539ca43afff\", \"check-type\": \"oval\"}]",
-                                     "oval", "full", "", APP_ID)
+                                          "[{\"pce-id\": \"7bc0df90-cdff-4c73-99ab-8539ca43afff\", \"check-type\": \"oval\"}]",
+                                          "oval", "full", "", APP_ID)
             request_assessment(m)
 
 
         # Assess a MacOS system                                                                                    
         elif option == "5":
             m = InitiateAssessmentMessage("assess", "os == MacOS 10.14", "<= 3 days", "06-15-2020", "true",
-                                     "[{\"pce-id\": \"c6048795-2d04-4142-806d-2c1d281c335c\", \"check-type\": \"oval\"}]",
-                                     "oval", "full", "", APP_ID)
+                                          "[{\"pce-id\": \"c6048795-2d04-4142-806d-2c1d281c335c\", \"check-type\": \"oval\"}]",
+                                          "oval", "full", "", APP_ID)
             request_assessment(m)
 
         # Assess a Ubuntu system
         elif option == "6":
-              m = InitiateAssessmentMessage("assess", "os == Ubuntu 20.04", "<= 3 days", "06-15-2020", "true",
-                                     "[{\"pce-id\": \"1fe4dc4a-37a6-4787-a47a-e27f28b08e43\", \"check-type\": \"oval\"}]",
-                                     "oval", "full", "", APP_ID)
-              request_assessment(m)
-            
+            m = InitiateAssessmentMessage("assess", "os == Ubuntu 20.04", "<= 3 days", "06-15-2020", "true",
+                                          "[{\"pce-id\": \"1fe4dc4a-37a6-4787-a47a-e27f28b08e43\", \"check-type\": \"oval\"}]",
+                                          "oval", "full", "", APP_ID)
+            request_assessment(m)
+
         # Cancel an assessment
         elif option == "7":
             # Send a cancel request to the manager
@@ -182,7 +183,7 @@ with DxlClient(config) as client:
             # Send a query request to the manager with the imaginary
             # query "my new query"
             qrm = query_repository("special_query")
-            display_query_results(qrm)                                                                              
+            display_query_results(qrm)
 
         # Quit the application
         elif option == "0":
@@ -190,4 +191,3 @@ with DxlClient(config) as client:
 
         else:
             logger.info("Invalid input: %s", option)
- 

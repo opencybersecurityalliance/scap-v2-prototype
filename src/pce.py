@@ -114,4 +114,3 @@ with DxlClient(config) as client:
             client.send_response(response)
             
         time.sleep(1)
-            
