@@ -1,97 +1,58 @@
-# scap-v2-prototype
-The SCAP v2 Prototype implements the components and basic message flows for the SCAP v2 Architecture which is defined [here](https://groups.google.com/a/list.nist.gov/group/scap-dev-endpoint/attach/875891ab9f4df/SCAP%20v2%20Data%20Collection%20Architecture%2020200818.docx?part=0.1).
+### Join us on Slack!
 
-## Build Instructions
-The following provides instructions on how to set up the SCAP v2 Prototype on Ubuntu 20.04.
+[Click here](https://docs.google.com/forms/d/1vEAqg9SKBF3UMtmbJJ9qqLarrXN5zeVG3_obedA3DKs) and fill out the form to receive an invite to the Open Cybersecurity Alliance slack instance, then join the #scapv2_prototype channel, to meet and discuss usage with the team.
 
-### Install Docker
-Docker can be installed using the instructions found [here](https://docs.docker.com/engine/install/ubuntu/). Docker may be installed on other operating systems by following the instructions found [here](https://docs.docker.com/get-docker/).
+### Video Introduction!
 
-### Install OpenDXL
-The [OpenDXL Broker](https://hub.docker.com/r/opendxl/opendxl-broker/) Docker image can be retrieved using the following command.
+[Click here](https://www.youtube.com/watch?v=Q9SC1fpTKvQ) to view an introduction video on this project and the use cases it solves for.
 
-`sudo docker pull opendxl/opendxl-broker`
+### Introduction
 
-Next, prepare the directory structure for the OpenDXL Broker. Assuming you are in a user home directory (e.g., /home/dhaynes), run the following commands. These commands are based on the instructions found [here](https://github.com/opendxl/opendxl-broker/wiki/Command-Line-OpenDXL-Broker-Installation).
+The SCAPv2 Prototype project is an effort to create an open-source prototype implementation of the SCAPv2 data collection architecture. This project has two main goals:
 
-`mkdir opendxl`<br>
-`mkdir opendxl/opendxl-broker`
+* To experiment and validate designs before codified in an architecture standard
+* To work towards providing an example implementation in order to support the future testing of compliant vendor products.
 
-Next, run OpenDXL with the following command. The -v argument should point to the directory structure created in the previous step. 
+The project supports dummy message flows through the architecture, in support of key use cases.
 
-`sudo docker run -d --name opendxl-broker -p 8443:8443 -p 8883:8883 -v /home/dhaynes/opendxl/opendxl-broker:/dxlbroker-volume opendxl/opendxl-broker`
+### What is SCAP?
 
-Check to see that the OpenDXL Docker image is running using the following command.
+The [Security Content Automation Protocol](https://csrc.nist.gov/projects/security-content-automation-protocol) (SCAP) is a super-standard that is publshed by NIST ([NIST SP 800-126](https://csrc.nist.gov/publications/detail/sp/800-126/rev-3/final)), comprised of a number of referenced component standards maintained by NIST as well as other groups. The primary use cases of SCAP surround automated enterprise security assessment, vulnerability and patch management, configuration assessment, and software inventory.
 
-`sudo docker ps`
+### What is SCAPv2?
 
-If there are no directories (config, keystore, logs, policy) in opendxl-broker, ensure that docker has permission to create them and re-run OpenDXL as above.
+[SCAPv2](https://csrc.nist.gov/projects/security-content-automation-protocol-v2) is an effort that began in late 2018 to create the next  major iteration of the SCAP standard, in support of several key goals:
 
-`sudo chmod g+w opendxl/opendxl-broker`  
-`sudo chgrp ubuntu opendxl/opendxl-broker`   Grant write permission to group that sudo runs in (`ubuntu`)
+* To support continuous monitoring of enterprise assets, rather than just-in-time
+* To expand the SCAP focus to all enterprise assets including cloud, mobile, IoT etc, rather than only focusong on traditional endpoints
+* To standardize interoperable architectural components, rather than just be a data format standard
 
-### Install OpenDXL Client Library
-The following was based on the instructions found [here](https://opendxl.github.io/opendxl-client-python/pydoc/installation.html).
+Development on the SCAPv2 standard itself occurs in several [open public working groups](https://csrc.nist.gov/projects/security-content-automation-protocol-v2/scapv2-community).
 
-First, check the OpenSSL version used by Python.
+### Dependencies
 
-`python3`
+Docker, OpenDXL broker and client
 
-Then, type the following.
+### Installation
 
-`>>> import ssl`<br>
-`>>> ssl.OPENSSL_VERSION`
+See [INSTALL](INSTALL.md)
 
-Once the OpenSSL version is verified (1.0.1 or greater), type the following.
+### Contributing
 
-`>>> quit()`
+We are thrilled you are considering contributing! We welcome all contributors.
 
-Next, install pip.
+Please read our [guidelines for contributing](https://github.com/opencybersecurityalliance/oca-admin/blob/master/CONTRIBUTING.md).
 
-`sudo apt install python3-pip`
+### Licensing
 
-Then, the OpenDXL client library can be installed using the following command.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-`pip3 install dxlclient`
+    http://www.apache.org/licenses/LICENSE-2.0
 
-Once installed, provision the OpenDXL client by running the following command. This will create files needed by the OpenDXL client to connect to the OpenDXL broker in the /home/dhaynes/opendxl/opendxl-client directory. You will have to enter the OpenDXL broker username (admin) and password (password).
-
-`python3 -m dxlclient provisionconfig /home/dhaynes/opendxl/opendxl-client 127.0.0.1 opendxl-client`
-
-### Get the SCAP v2 Prototype
-Retrieve the SCAP v2 Prototype by running the following command. 
-
-`git clone https://github.com/opencybersecurityalliance/scap-v2-prototype.git`
-
-Then, edit scap-v2-prototype/src/common.py to point to the OpenDXL client configuration file created during provisioning.
-
-`CONFIG = "/home/username/opendxl/opendxl-client/dxlclient.config"`
-
-Now, the individual components of the SCAP v2 Architecture can be started from the scap-v2-prototype/src directory.
-
-Start the Manager.
-
-`python3 manager.py`
-
-Start the Repository. The repository must be started before any Collector, PCX, or PCE.
-
-`python3 repository.py`
-
-Start the Collector. The Collector must be started before any PCX or PCE that reports to it.
-
-`python3 collector.py <collector_config in /config>`
-
-Start the PCX. The PCX must be started before any PCE that reports to it.
-
-`python3 pcx.py <pcx_config in /config>`
-
-Start the PCE. 
-
-`python3 pce.py <pce_config in /config>`
-
-Start the Application.
-
-`python3 application.py <application_config in /config>`
-
-## Getting Help
-To get help with the SCAP v2 Prototype or to report an issue. Please open an [issue](https://github.com/opencybersecurityalliance/scap-v2-prototype/issues) or send an email to https://groups.google.com/a/list.nist.gov/g/scap-dev-endpoint.
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
