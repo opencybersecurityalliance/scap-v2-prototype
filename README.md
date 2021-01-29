@@ -63,9 +63,9 @@ Retrieve the SCAP v2 Prototype by running the following command.
 
 `git clone https://github.com/opencybersecurityalliance/scap-v2-prototype.git`
 
-Create environment variable pointing to the OpenDXL client configuration file created during provisioning.
+Then, edit scap-v2-prototype/src/common.py to point to the OpenDXL client configuration file created during provisioning.
 
-`export CONFIG="/home/dhaynes/opendxl/opendxl-client/dxlclient.config"`
+`CONFIG = "/home/username/opendxl/opendxl-client/dxlclient.config"`
 
 Now, the individual components of the SCAP v2 Architecture can be started from the scap-v2-prototype/src directory.
 
