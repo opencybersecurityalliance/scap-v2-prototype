@@ -51,7 +51,7 @@ SERVICE_PCE_REQUEST_TOPIC = "/scap/service/pce/request/"+PCE_ID
 EVENT_PCE_REGISTRATION_TOPIC = "/scap/event/pce/registration/" + REGISTER_TO
 
 # Create DXL configuration from file
-config = DxlClientConfig.create_dxl_config_from_file(CONFIG_FILE)
+config = DxlClientConfig.create_dxl_config_from_file(CONFIG)
 
 # Stores the collection requests for processing
 collection_requests = []
@@ -114,4 +114,3 @@ with DxlClient(config) as client:
             client.send_response(response)
             
         time.sleep(1)
-            

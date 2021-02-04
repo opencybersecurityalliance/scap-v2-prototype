@@ -23,7 +23,8 @@ from dxlclient.client_config import DxlClientConfig
 from dxlclient.message import Message, Request, Response
 from dxlclient.service import ServiceRegistrationInfo
 from dxlclient.message import Event
-from messages import InitiateAssessmentMessage, RequestAcknowledgementMessage, CancelAssessmentMessage, ReportResultsMessage, MessageType, QueryMessage, QueryResultMessage, CollectorRequestMessage
+from messages import InitiateAssessmentMessage, RequestAcknowledgementMessage, CancelAssessmentMessage
+from messages import ReportResultsMessage, MessageType, QueryMessage, QueryResultMessage, CollectorRequestMessage
 
 # Import common logging and configuration
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")
@@ -51,7 +52,7 @@ EVENT_ASSESSMENT_RESULTS_TOPIC = "/scap/event/assessment/results"
 EVENT_STORE_DATA_TOPIC = "/scap/event/data/store"
 
 # Create DXL configuration from file
-config = DxlClientConfig.create_dxl_config_from_file(CONFIG_FILE)
+config = DxlClientConfig.create_dxl_config_from_file(CONFIG)
 
 # Stores initiate assessment requests for processing
 assessment_requests = []
@@ -66,7 +67,7 @@ transactions_targets = {}
 # Create the client
 with DxlClient(config) as client:
 
-    # Query the repository for certain information                                                                
+    # Query the repository for certain information
     def query_repository(query):
         # Create query message and send it to the repository                                                      
         req = Request(SERVICE_REPOSITORY_QUERY_TOPIC)
@@ -78,10 +79,10 @@ with DxlClient(config) as client:
         qrm = QueryResultMessage()
         qrm.parse(res.payload.decode())
         return qrm
-            
+
     # Send collection results to the appropriate application        
     def send_collection_results_event(rrsm):
-        send_event(EVENT_ASSESSMENT_RESULTS_TOPIC+"/"+rrsm.requestor_id, rrsm.to_json())
+        send_event(EVENT_ASSESSMENT_RESULTS_TOPIC + "/" + rrsm.requestor_id, rrsm.to_json())
 
     # Store data in the repository
     def store_data(m):
@@ -92,27 +93,27 @@ with DxlClient(config) as client:
     def task_collector(crm, collector):
         logger.info("Tasking collector %s with request: %s", collector, crm.to_s())
         send_event(EVENT_COLLECTOR_REQUEST_TOPIC+"/"+collector, crm.to_json())
-        
+
     # Send event to the specified topic                                                                            
     def send_event(topic, m):
         event = Event(topic)
         event.payload = m.encode()
         client.send_event(event)
-        
+
     # Acknowledge incoming requests with an acknowledgement message
     # and assign a transaction id
     def acknowledge_request(request):
         # Prepare response and assign a new transaction
         # id 
-        res = Response(request)                     
+        res = Response(request)
         rm = RequestAcknowledgementMessage()
         rm.transaction_id = str(uuid.uuid4())
         res.payload = (rm.to_json()).encode()
-        
+
         # Send the request acknowledgement to the application
         # in reponse to the request and return the transaction
         # id
-        logger.info("Sending request acknowlegement: %s", rm.to_s())                         
+        logger.info("Sending request acknowlegement: %s", rm.to_s())
         client.send_response(res)
         return rm.transaction_id
 
@@ -122,7 +123,7 @@ with DxlClient(config) as client:
     # because it represents a cancel assessment request
     def get_ids(content):
         ids = ""
-	if content == "inventory":
+        if content == "inventory":
             ids = "1,2,3"
         elif content == "assess":
             ids = "4,5,6"
@@ -130,7 +131,7 @@ with DxlClient(config) as client:
             ids = "7,8,9"
         return ids
 
-    # Determine if the report request represents on-going monitoring                                               
+    # Determine if the report request represents on-going monitoring
     # or a point-in-time assessment. Only support point-in-time                                                     
     # assessments for now.                        
     def is_point_in_time_assessment(iam):
@@ -138,71 +139,71 @@ with DxlClient(config) as client:
             return True
         else:
             return False
-        
+
     # Build repository query based on targeting information and the
     # type of information that is needed
-    def query_builder(targeting, option):        
+    def query_builder(targeting, option):
         query = ""
-        if re.search(".*[Ww][Ii][Nn][Dd][Oo][Ww][Ss].*",targeting):
+        if re.search(".*[Ww][Ii][Nn][Dd][Oo][Ww][Ss].*", targeting):
             query = "windows"
-        elif re.search(".*[Rr][Hh][Ee][Ll].*",targeting):
+        elif re.search(".*[Rr][Hh][Ee][Ll].*", targeting):
             query = "rhel"
-        elif re.search(".*[Ss][Oo][Ll][Aa][Rr][Ii][Ss].*",targeting):
+        elif re.search(".*[Ss][Oo][Ll][Aa][Rr][Ii][Ss].*", targeting):
             query = "solaris"
-        elif re.search(".*[Mm][Aa][Cc][Oo][Ss].*",targeting):
+        elif re.search(".*[Mm][Aa][Cc][Oo][Ss].*", targeting):
             query = "macos"
-        elif re.search(".*[Uu][Bb][Uu][Nn][Tt][Uu].*",targeting):
+        elif re.search(".*[Uu][Bb][Uu][Nn][Tt][Uu].*", targeting):
             query = "ubuntu"
         elif re.search("\*", targeting):
             query = "windows_rhel_solaris_macos_ubuntu"
         else:
             return None
 
-        return query+"_"+option
-            
+        return query + "_" + option
+
     # Get previous assessment results from the repository                                                              
     def get_previous_results(iam, targets):
         logger.info("Searching for previous results")
 
         query = query_builder(iam.targeting, "results")
-        
+
         # Query the repository and filter based on oldest results,
         # result_format_filters, collection_method, and targeting
         # properties of the report request message
         qrm = query_repository(query)
 
         if qrm.result == "":
-            logger.info("Found: "+str(None))
+            logger.info("Found: " + str(None))
             return None
         else:
             rrsm = ReportResultsMessage(iam.transaction_id, iam.requestor_id, "", "", qrm.result)
-            logger.info("Found: "+qrm.result)
+            logger.info("Found: " + qrm.result)
             return rrsm
 
     # Get applicable/undetermined targets from the repository
     def get_applicable_targets(iam):
         logger.info("Searching for applicable/undetermined targets")
 
-        query =	query_builder(iam.targeting, "targets")
-        
+        query = query_builder(iam.targeting, "targets")
+
         # Query the repository for applicable and undetermined
         # assets
         qrm = query_repository(query)
-        logger.info("Found: "+str(qrm.result))
+        logger.info("Found: " + str(qrm.result))
         return qrm.result
 
     # Get in scope collectors based on targets from the repository
     def get_collectors(targets):
         logger.info("Searching for in scope collectors")
 
-        query = "targets_"+json.dumps(targets)
-        
+        query = "targets_" + json.dumps(targets)
+
         # Query the repository for in scope collectors
         # based on specified targets
         qrm = query_repository(query)
-        logger.info("Found: "+str(qrm.result))
+        logger.info("Found: " + str(qrm.result))
         return qrm.result
-        
+
     # Task the collectors with the initiate assessment request
     def task_collectors(iam, targets, collectors):
         logger.info("Tasking the collectors %s with collection request", collectors)
@@ -212,15 +213,15 @@ with DxlClient(config) as client:
         # assessment request
         ids = get_ids(iam.content)
         crm = CollectorRequestMessage(ids, iam.targeting, iam.latest_return,
-                                    iam.collection_method, iam.result_format_filters,
+                                      iam.collection_method, iam.result_format_filters,
                                       iam.collection_parameters, iam.transaction_id,
                                       iam.requestor_id, targets)
 
         # Send collector request events to the appropriate
         # collectors
-        for collector in collectors:               
+        for collector in collectors:
             task_collector(crm, collector)
-        
+
     # Using the previously collected results and the initiate
     # assessment request to determine what checks are remaining
     # from the report request. Just pass the request through for now
@@ -231,8 +232,8 @@ with DxlClient(config) as client:
             return iam
         else:
             iam.content = "remaining_request"
-            return iam 
-        
+            return iam
+
     # Process incoming assessments from applications
     class InitiateAssessmentCallback(RequestCallback):
         def on_request(self, request):
@@ -246,15 +247,15 @@ with DxlClient(config) as client:
             iam = InitiateAssessmentMessage()
             iam.parse(request.payload.decode())
             iam.transaction_id = transaction_id
-            
+
             logger.info("Manager recieved initiate assessment request: %s", iam.to_s())
-            
+
             # Add to the list of active assessment transactions
             if iam.requestor_id in transactions.keys():
                 transactions[iam.requestor_id].append(transaction_id)
             else:
                 transactions[iam.requestor_id] = [transaction_id]
-                
+
             # Append the initiate assessment request to the list
             # of requests that need to be processed
             assessment_requests.append(iam)
@@ -266,7 +267,7 @@ with DxlClient(config) as client:
             cam = CancelAssessmentMessage()
             cam.parse(request.payload.decode())
             logger.info("Manager received cancel assessment request: %s", cam.to_s())
-            
+
             # Check to make sure it came from the application
             # that originally requested the assessment. If it
             # is not, just ignore the message
@@ -274,7 +275,7 @@ with DxlClient(config) as client:
                 assessment_requests.append(cam)
             # Cancel request didn't come from originating application so ignore
             else:
-                logger.info("Ignoring cancel request "+cam.transaction_id+" for application "+cam.requestor_id)
+                logger.info("Ignoring cancel request " + cam.transaction_id + " for application " + cam.requestor_id)
 
             # Send request acknowledgement message with the transaction
             # id that was cancelled 
@@ -290,7 +291,7 @@ with DxlClient(config) as client:
     # Have manager provide assessment request, cancel assessment, and query services
     info.add_topic(SERVICE_INITIATE_ASSESSMENT_TOPIC, InitiateAssessmentCallback())
     info.add_topic(SERVICE_CANCEL_ASSESSMENT_TOPIC, CancelAssessmentCallback())
-   
+
     # Connect to the message fabric and register the service
     client.connect()
     client.register_service_sync(info, 10)
@@ -306,15 +307,15 @@ with DxlClient(config) as client:
                 iam = InitiateAssessmentMessage()
                 iam.transaction_id = ar.transaction_id
                 iam.requestor_id = ar.requestor_id
-                
-                targets = transactions_targets[ar.transaction_id]
-                
-                # Query the repository for in scope collectors                                                      
-		collectors = get_collectors(targets)
 
-		# Task the in scope collectors                                                                   
+                targets = transactions_targets[ar.transaction_id]
+
+                # Query the repository for in scope collectors                                                      
+                collectors = get_collectors(targets)
+
+                # Task the in scope collectors
                 task_collectors(iam, targets, collectors)
-            else:    
+            else:
                 # Store the initiate assessment request in the repository 
                 store_data(ar)
 
@@ -323,13 +324,13 @@ with DxlClient(config) as client:
 
                 # Store targets associated with the transaction_id
                 transactions_targets[ar.transaction_id] = targets
-                
+
                 # If point-in-time assessment, get any previous results from                                       
                 # the database                                                                                     
                 previous_results = None
                 if is_point_in_time_assessment(ar):
                     previous_results = get_previous_results(ar, targets)
-                    
+
                 # If there are previous results, send the results to the
                 # application
                 if previous_results != None:
@@ -338,12 +339,12 @@ with DxlClient(config) as client:
 
                 # Based on previous results determine what is left                                                  
                 # and task the collector                                                                           
-                rr_ar = get_remaining_request(previous_results,ar)
-                        
+                rr_ar = get_remaining_request(previous_results, ar)
+
                 # Query the repository for in scope collectors
                 collectors = get_collectors(targets)
 
                 # Task the in scope collectors
                 task_collectors(rr_ar, targets, collectors)
-       
+
         time.sleep(1)

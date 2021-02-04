@@ -26,11 +26,11 @@ class MessageType(Enum):
 # Represents a message that sent by the application to the
 # manager to begin the assessment of endpoints
 class InitiateAssessmentMessage:
-    def __init__(self, content = "", targeting = "",
-                 oldest_results = "", latest_return = "", fresh_results = "",
-                 collection_method = "", result_format_filters = "",
-                 collection_parameters = "", transaction_id = "",
-                 requestor_id = ""):
+    def __init__(self, content="", targeting="",
+                 oldest_results="", latest_return="", fresh_results="",
+                 collection_method="", result_format_filters="",
+                 collection_parameters="", transaction_id="",
+                 requestor_id=""):
         self.message_type = MessageType.INITIATE_ASSESSMENT.value
         self.content = content
         self.targeting = targeting
@@ -42,7 +42,7 @@ class InitiateAssessmentMessage:
         self.collection_parameters = collection_parameters
         self.transaction_id = transaction_id
         self.requestor_id = requestor_id
-        
+
     def parse(self, m):
         j = json.loads(m)
         self.message_type = j["message_type"]
@@ -73,16 +73,19 @@ class InitiateAssessmentMessage:
         return json.dumps(j)
 
     def to_s(self):
-        s = "\n\tMessage Type: {}\n\tContent: {}\n\tTargeting: {}\n\tOldest Results: {}\n\tLatest Return: {}\n\tFresh Results: {}\n\tCollection Method: {}\n\tResult Format Filters: {}\n\tCollection Parameters: {}\n\tTransaction ID: {}\n\tRequestor ID: {}".format(str(self.message_type), self.content, self.targeting, self.oldest_results, self.latest_return, self.fresh_results, self.collection_method, self.result_format_filters, self.collection_parameters, self.transaction_id, self.requestor_id)
+        s = "\n\tMessage Type: {}\n\tContent: {}\n\tTargeting: {}\n\tOldest Results: {}\n\tLatest Return: {}\n\tFresh Results: {}\n\tCollection Method: {}\n\tResult Format Filters: {}\n\tCollection Parameters: {}\n\tTransaction ID: {}\n\tRequestor ID: {}".format(
+            str(self.message_type), self.content, self.targeting, self.oldest_results, self.latest_return,
+            self.fresh_results, self.collection_method, self.result_format_filters, self.collection_parameters,
+            self.transaction_id, self.requestor_id)
         return s
 
 # Represents a message sent by the Manager to the Collectors and
 # PCXs to task them with the collection of endpoint information
 class CollectorRequestMessage():
-    def __init__(self, ids = "", targeting = "",
-                 latest_return = "", collection_method = "",
-                 result_format_filters = "", collection_parameters = "",
-                 transaction_id = "", requestor_id = "", targets = ""):
+    def __init__(self, ids="", targeting="",
+                 latest_return="", collection_method="",
+                 result_format_filters="", collection_parameters="",
+                 transaction_id="", requestor_id="", targets=""):
         self.message_type = MessageType.COLLECTION_REQUEST.value
         self.ids = ids
         self.targeting = targeting
@@ -106,7 +109,7 @@ class CollectorRequestMessage():
         self.transaction_id = j["transaction_id"]
         self.requestor_id = j["requestor_id"]
         self.targets = j["targets"]
-        
+
     def to_json(self):
         j = {}
         j["message_type"] = self.message_type
@@ -119,10 +122,13 @@ class CollectorRequestMessage():
         j["transaction_id"] = self.transaction_id
         j["requestor_id"] = self.requestor_id
         j["targets"] = self.targets
-        return json.dumps(j)                                     
+        return json.dumps(j)
 
     def to_s(self):
-        s = "\n\tMessage Type: {}\n\tIDs: {}\n\tTargeting: {}\n\tLatest Return: {}\n\tCollection Method: {}\n\tResult Format Filters: {}\n\tCollection Parameters: {}\n\tTransaction ID: {}\n\tRequestor ID: {}\n\tTargets: {}".format(str(self.message_type), self.ids, self.targeting, self.latest_return, self.collection_method, self.result_format_filters, self.collection_parameters, self.transaction_id, self.requestor_id, json.dumps(self.targets))
+        s = "\n\tMessage Type: {}\n\tIDs: {}\n\tTargeting: {}\n\tLatest Return: {}\n\tCollection Method: {}\n\tResult Format Filters: {}\n\tCollection Parameters: {}\n\tTransaction ID: {}\n\tRequestor ID: {}\n\tTargets: {}".format(
+            str(self.message_type), self.ids, self.targeting, self.latest_return, self.collection_method,
+            self.result_format_filters, self.collection_parameters, self.transaction_id, self.requestor_id,
+            json.dumps(self.targets))
         return s
 
 # Represents a message sent from the Manager to the Application
@@ -131,7 +137,7 @@ class CollectorRequestMessage():
 class RequestAcknowledgementMessage:
     def __init__(self):
         self.message_type = MessageType.REQUEST_ACKNOWLEDGEMENT.value
-        
+
     def parse(self, m):
         j = json.loads(m)
         self.message_type = j["message_type"]
@@ -152,7 +158,8 @@ class RequestAcknowledgementMessage:
 # Repository for storage and to the Application for further
 # processing.
 class ReportResultsMessage:
-    def __init__(self, transaction_id="", requestor_id="", assessment_results="", target_id = "", collector_id ="", pcx_id="", pce_id="", timestamp=""):
+    def __init__(self, transaction_id="", requestor_id="", assessment_results="", target_id="", collector_id="",
+                 pcx_id="", pce_id="", timestamp=""):
         self.message_type = MessageType.REPORT_RESULTS.value
         self.transaction_id = transaction_id
         self.requestor_id = requestor_id
@@ -174,6 +181,7 @@ class ReportResultsMessage:
         self.pcx_id = j["pcx_id"]
         self.pce_id = j["pce_id"]
         self.timestamp = j["timestamp"]
+
     def to_json(self):
         j = {}
         j["message_type"] = self.message_type
@@ -188,7 +196,9 @@ class ReportResultsMessage:
         return json.dumps(j)
 
     def to_s(self):
-        s = "\n\tMessage Type: {}\n\tTransaction ID: {}\n\tRequestor ID: {}\n\tAssessment Results: {}\n\tTarget ID: {}\n\tCollector ID: {}\n\tPCX ID: {}\n\tPCE ID: {}\n\tTimestamp: {}".format(str(self.message_type), self.transaction_id, self.requestor_id, self.assessment_results, self.target_id, self.collector_id, self.pcx_id, self.pce_id, self.timestamp) 
+        s = "\n\tMessage Type: {}\n\tTransaction ID: {}\n\tRequestor ID: {}\n\tAssessment Results: {}\n\tTarget ID: {}\n\tCollector ID: {}\n\tPCX ID: {}\n\tPCE ID: {}\n\tTimestamp: {}".format(
+            str(self.message_type), self.transaction_id, self.requestor_id, self.assessment_results, self.target_id,
+            self.collector_id, self.pcx_id, self.pce_id, self.timestamp)
         return s
 
 # Represents a message sent by the Application to the Manager
@@ -198,13 +208,13 @@ class CancelAssessmentMessage:
         self.message_type = MessageType.CANCEL_ASSESSMENT.value
         self.transaction_id = transaction_id
         self.requestor_id = requestor_id
-        
+
     def parse(self, m):
         j = json.loads(m)
-	self.message_type = j["message_type"]
+        self.message_type = j["message_type"]
         self.transaction_id = j["transaction_id"]
         self.requestor_id = j["requestor_id"]
-        
+
     def to_json(self):
         j = {}
         j["message_type"] = self.message_type
@@ -235,26 +245,26 @@ class QueryMessage:
         j["query"] = self.query
         return json.dumps(j)
 
-    def to_s(self):       
-        s = "\n\tMessage Type: {}\n\tQuery: {}".format(str(self.message_type), self.query)  
+    def to_s(self):
+        s = "\n\tMessage Type: {}\n\tQuery: {}".format(str(self.message_type), self.query)
         return s
 
 # Represents a message sent by the Repository to the
 # Application, Manager, Collectors, or PCXs with the
 # results of a query.
 class QueryResultMessage:
-    def __init__(self, query = "", result = ""): 
+    def __init__(self, query="", result=""):
         self.message_type = MessageType.QUERY_RESULT.value
         self.query = query
         self.result = result
 
-    def	parse(self, m):
+    def parse(self, m):
         j = json.loads(m)
         self.message_type = j["message_type"]
         self.query = j["query"]
         self.result = j["result"]
 
-    def	to_json(self):
+    def to_json(self):
         j = {}
         j["message_type"] = self.message_type
         j["query"] = self.query
@@ -269,7 +279,8 @@ class QueryResultMessage:
 # PCXs, and Collectors to register to the architecture.
 # These messages are eventually stored in the Repository.
 class RegistrationMessage:
-    def __init__(self, pce_id = "", collector_id = "", pcx_id = "",  asset_info = "", pce_make = "", pce_model = "", target_id = "", pcx_make = "", pcx_model = "", collector_make = "", collector_model = "", supported_check_types = ""):
+    def __init__(self, pce_id="", collector_id="", pcx_id="", asset_info="", pce_make="", pce_model="", target_id="",
+                 pcx_make="", pcx_model="", collector_make="", collector_model="", supported_check_types=""):
         self.message_type = MessageType.REGISTRATION.value
         self.pce_id = pce_id
         self.collector_id = collector_id
@@ -299,7 +310,7 @@ class RegistrationMessage:
         self.collector_make = j["collector_make"]
         self.collector_model = j["collector_model"]
         self.supported_check_types = j["supported_check_types"]
-        
+
     def to_json(self):
         j = {}
         j["message_type"] = self.message_type
@@ -318,5 +329,8 @@ class RegistrationMessage:
         return json.dumps(j)
 
     def to_s(self):
-        s = "\n\tMessage Type: {}\n\tTarget ID: {}\n\tCollector ID: {}\n\tCollector Make: {}\n\tCollector Model: {}\n\tPCX ID: {}\n\tPCX Make: {}\n\tPCX Model: {}\n\tPCE ID: {}\n\tPCE Make: {}\n\tPCE Model: {}\n\tSupported Check Types: {}\n\tTarget ID: {}\n\tAsset Information: {}".format(str(self.message_type), self.target_id, self.collector_id, self.collector_make, self.collector_model, self.pcx_id, self.pcx_make, self.pcx_model, self.pce_id, self.pce_make, self.pce_model, json.dumps(self.supported_check_types), self.target_id, json.dumps(self.asset_info))
+        s = "\n\tMessage Type: {}\n\tTarget ID: {}\n\tCollector ID: {}\n\tCollector Make: {}\n\tCollector Model: {}\n\tPCX ID: {}\n\tPCX Make: {}\n\tPCX Model: {}\n\tPCE ID: {}\n\tPCE Make: {}\n\tPCE Model: {}\n\tSupported Check Types: {}\n\tTarget ID: {}\n\tAsset Information: {}".format(
+            str(self.message_type), self.target_id, self.collector_id, self.collector_make, self.collector_model,
+            self.pcx_id, self.pcx_make, self.pcx_model, self.pce_id, self.pce_make, self.pce_model,
+            json.dumps(self.supported_check_types), self.target_id, json.dumps(self.asset_info))
         return s

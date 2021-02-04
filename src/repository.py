@@ -19,7 +19,8 @@ from dxlclient.client import DxlClient
 from dxlclient.client_config import DxlClientConfig
 from dxlclient.message import Request, Response
 from dxlclient.service import ServiceRegistrationInfo
-from messages import InitiateAssessmentMessage, ReportResultsMessage, QueryMessage, QueryResultMessage, RegistrationMessage, MessageType
+from messages import InitiateAssessmentMessage, ReportResultsMessage, QueryMessage, QueryResultMessage
+from messages import RegistrationMessage, MessageType
 
 # Import common logging and configuration
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")
@@ -35,7 +36,7 @@ SERVICE_REPOSITORY_QUERY_TOPIC = "/scap/service/repository/query"
 EVENT_STORE_DATA_TOPIC = "/scap/event/data/store"
 
 # Create DXL configuration from file
-config = DxlClientConfig.create_dxl_config_from_file(CONFIG_FILE)
+config = DxlClientConfig.create_dxl_config_from_file(CONFIG)
 
 # Stores all transactions associated with an application
 app_transactions = {}
@@ -61,30 +62,30 @@ with DxlClient(config) as client:
     def store_request(iam):
         logger.info("Storing request: %s", iam.to_s())
         if iam.requestor_id in app_transactions.keys():
-	    app_transactions[iam.requestor_id].append(iam.transaction_id)
+            app_transactions[iam.requestor_id].append(iam.transaction_id)
         else:
             app_transactions[iam.requestor_id] = [iam.transaction_id]
-            
+
     # Store the report results in the repository
     def store_results(rrsm):
         logger.info("Storing results: %s", rrsm.to_s())
 
-        if re.search(".*windows.*",rrsm.assessment_results):
+        if re.search(".*windows.*", rrsm.assessment_results):
             if rrsm.target_id not in targets["windows"]:
                 targets["windows"].append(rrsm.target_id)
-        elif re.search(".*rhel.*",rrsm.assessment_results):
+        elif re.search(".*rhel.*", rrsm.assessment_results):
             if rrsm.target_id not in targets["rhel"]:
                 targets["rhel"].append(rrsm.target_id)
-        elif re.search(".*solaris.*",rrsm.assessment_results):
+        elif re.search(".*solaris.*", rrsm.assessment_results):
             if rrsm.target_id not in targets["solaris"]:
                 targets["solaris"].append(rrsm.target_id)
-        elif re.search(".*macos.*",rrsm.assessment_results):
+        elif re.search(".*macos.*", rrsm.assessment_results):
             if rrsm.target_id not in targets["macos"]:
-                targets["macos"].append(rrsm.target_id)                
-        elif re.search(".*ubuntu.*",rrsm.assessment_results):
+                targets["macos"].append(rrsm.target_id)
+        elif re.search(".*ubuntu.*", rrsm.assessment_results):
             if rrsm.target_id not in targets["ubuntu"]:
                 targets["ubuntu"].append(rrsm.target_id)
-        
+
     # Store the assets in the repository                                                                            
     def store_assets(rm):
         logger.info("Storing assets: %s", rm.to_s())
@@ -94,10 +95,10 @@ with DxlClient(config) as client:
                 collectors[rm.target_id].append(rm.collector_id)
         else:
             collectors[rm.target_id] = [rm.collector_id]
-               
+
             if rm.target_id not in all_targets:
                 all_targets.append(rm.target_id)
-       
+
     # Store arbitrary data in the repository
     def store_arbitrary_data(data):
         logger.info("Storing arbitrary data: %s", data)
@@ -106,19 +107,19 @@ with DxlClient(config) as client:
     # "query results"
     def execute_query(query):
         logger.info("Executing query: %s", query)
-        
+
         if query == "windows_results":
-            return "" # No previous results
+            return ""  # No previous results
         elif query == "rhel_results":
             return "previous rhel results"
         elif query == "solaris_results":
-            return "" # No previous results
+            return ""  # No previous results
         elif query == "macos_results":
-            return "" # No previous results
+            return ""  # No previous results
         elif query == "ubuntu_results":
-            return "" # No previous results
+            return ""  # No previous results
         elif query == "windows_rhel_solaris_macos_ubuntu_results":
-            return "" # No previous results
+            return ""  # No previous results
         elif query == "windows_targets":
             return targets["windows"]
         elif query == "rhel_targets":
@@ -131,7 +132,7 @@ with DxlClient(config) as client:
             return targets["ubuntu"]
         elif query == "windows_rhel_solaris_macos_ubuntu_targets":
             return all_targets
-        
+
         # Get in-scope collectors based on the list of target
         # identifiers
         elif re.search("targets_.*", query):
@@ -141,7 +142,7 @@ with DxlClient(config) as client:
                 for c in collectors[t]:
                     if c not in in_scope_collectors:
                         in_scope_collectors.append(c)
-            return in_scope_collectors            
+            return in_scope_collectors
         elif query == "special_query":
             return "my_special_results"
         else:
@@ -156,18 +157,18 @@ with DxlClient(config) as client:
             qm = QueryMessage()
             qm.parse(request.payload.decode())
             results = execute_query(qm.query)
-            
+
             # Send query result back to the requesting component
             response = Response(request)
             qrm = QueryResultMessage(qm.query, results)
-            response.payload = (qrm.to_json()).encode()            
-            logger.info("Sending query results: "+qrm.to_s())
+            response.payload = (qrm.to_json()).encode()
+            logger.info("Sending query results: " + qrm.to_s())
             client.send_response(response)
 
-    # Process incoming storage requests 
+    # Process incoming storage requests
     class StoreDataEventCallback(EventCallback):
         def on_event(self, event):
-            
+
             j = json.loads(event.payload.decode())
             message_type = j["message_type"]
 
@@ -185,7 +186,7 @@ with DxlClient(config) as client:
                 store_assets(rm)
             else:
                 store_arbitrary_data(event.payload.decode())
-                
+
     # Prepare service registration information                                                                      
     info = ServiceRegistrationInfo(client, "/scap/repository")
 
