@@ -41,6 +41,8 @@ See [INSTALL](INSTALL.md)
 
 We are thrilled you are considering contributing! We welcome all contributors.
 
+Participation is expected to be consistent with the [Code of Conduct](https://github.com/opencybersecurityalliance/oca-admin/blob/master/CODE_OF_CONDUCT.md), the [licenses](https://github.com/opencybersecurityalliance/oca-admin/blob/master/LICENSE.md), and the acceptance of our [individual Contributor License Agreement](https://cla-assistant.io/opencybersecurityalliance/oasis-open-project), generally at the time of first contribution.
+
 Please read our [guidelines for contributing](https://github.com/opencybersecurityalliance/oca-admin/blob/master/CONTRIBUTING.md).
 
 ### Licensing
